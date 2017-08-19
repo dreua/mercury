@@ -33,6 +33,7 @@ import java.util.Map;
 import it.skarafaz.mercury.MercuryApplication;
 import it.skarafaz.mercury.R;
 import it.skarafaz.mercury.model.Command;
+import it.skarafaz.mercury.model.HttpProxy;
 import it.skarafaz.mercury.model.Server;
 
 public class ServerMapper {
@@ -70,6 +71,9 @@ public class ServerMapper {
         if (StringUtils.isEmpty(server.getPassword())) {
             server.setPassword(null);
         }
+        if (server.getHttpProxy() != null) {
+            errors.putAll(validateHttpProxy(server.getHttpProxy()));
+        }
         if (StringUtils.isBlank(server.getSudoPath())) {
             server.setSudoPath("sudo");
         }
@@ -82,6 +86,19 @@ public class ServerMapper {
             for (int i = 0; i < server.getCommands().size(); i++) {
                 errors.putAll(validateCommand(server.getCommands().get(i), i));
             }
+        }
+        return errors;
+    }
+
+    private Map<String, String> validateHttpProxy(HttpProxy httpProxy) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        if(StringUtils.isBlank(httpProxy.getHost())) {
+            errors.put("httpProxy.host", getString(R.string.validation_missing));
+        }
+        if (httpProxy.getPort() == null) {
+            httpProxy.setPort(80);
+        } else if (httpProxy.getPort() < 1 || httpProxy.getPort() > 65535) {
+            errors.put("httpProxy.port", getString(R.string.validation_invalid));
         }
         return errors;
     }

@@ -35,6 +35,7 @@ public class Server implements Serializable, Comparable<Server> {
     private Integer port;
     private String user;
     private String password;
+    private HttpProxy httpProxy;
     private String sudoPath;
     private String nohupPath;
     private List<Command> commands;
@@ -77,6 +78,14 @@ public class Server implements Serializable, Comparable<Server> {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public HttpProxy getHttpProxy() {
+        return httpProxy;
+    }
+
+    public void setHttpProxy(HttpProxy httpProxy) {
+        this.httpProxy = httpProxy;
     }
 
     public String getSudoPath() {

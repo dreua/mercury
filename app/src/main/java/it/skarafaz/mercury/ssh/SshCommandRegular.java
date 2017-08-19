@@ -47,6 +47,7 @@ public class SshCommandRegular extends SshCommand {
         this.port = command.getServer().getPort();
         this.user = command.getServer().getUser();
         this.password = command.getServer().getPassword();
+        this.httpProxy = command.getServer().getHttpProxy();
         this.sudoPath = command.getServer().getSudoPath();
         this.nohupPath = command.getServer().getNohupPath();
         this.sudo = command.getSudo();

@@ -23,6 +23,7 @@ package it.skarafaz.mercury.ssh;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
@@ -36,6 +37,7 @@ import java.util.Properties;
 
 import it.skarafaz.mercury.event.SshCommandEnd;
 import it.skarafaz.mercury.event.SshCommandStart;
+import it.skarafaz.mercury.model.HttpProxy;
 
 public abstract class SshCommand extends Thread {
     protected static final int TIMEOUT = 10000;
@@ -46,6 +48,7 @@ public abstract class SshCommand extends Thread {
     protected Integer port;
     protected String user;
     protected String password;
+    protected HttpProxy httpProxy;
     protected String sudoPath;
     protected String nohupPath;
     protected Boolean sudo;
@@ -100,6 +103,10 @@ public abstract class SshCommand extends Thread {
         boolean success = true;
         try {
             session = jsch.getSession(user, host, port);
+
+            if (httpProxy != null) {
+                session.setProxy(new ProxyHTTP(httpProxy.getHost(), httpProxy.getPort()));
+            }
 
             session.setUserInfo(getUserInfo());
             session.setConfig(getSessionConfig());
