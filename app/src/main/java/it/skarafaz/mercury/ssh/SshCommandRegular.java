@@ -108,9 +108,9 @@ public class SshCommandRegular extends SshCommand {
     @Override
     protected String formatCmd(String cmd) {
         if (sudo) {
-            return String.format("echo %s | %s -S -p '' %s %s > /dev/null 2>&1", password, sudoPath, nohupPath, cmd);
+            return String.format("echo %s | %s -S -p '' %s", password, sudoPath, cmd);
         } else {
-            return String.format("%s %s > /dev/null 2>&1", nohupPath, cmd);
+            return String.format("%s", cmd);
         }
     }
 

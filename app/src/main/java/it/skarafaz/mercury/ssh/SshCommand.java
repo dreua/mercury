@@ -26,12 +26,17 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import it.skarafaz.mercury.event.SshCommandEnd;
@@ -141,7 +146,36 @@ public abstract class SshCommand extends Thread {
     }
 
     protected boolean waitForChannelClosed(ChannelExec channel, InputStream stdout, InputStream stderr) {
-        return true;
+        boolean success = true;
+        try {
+            BufferedReader readerStdout = new BufferedReader(new InputStreamReader(stdout));
+            String line;
+            while ((line = readerStdout.readLine()) != null) {
+                logger.info(String.format("stdout: %s", line));
+            }
+            while (!channel.isClosed()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception ee) {
+                    // ignore
+                }
+            }
+            if (channel.getExitStatus() != 0) {
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new InputStreamReader(stderr));
+                    logger.error(String.format("exit-status: %d - %s", channel.getExitStatus(), read(reader)));
+                } finally {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                }
+                success = false;
+            }
+        } catch (IOException e) {
+            logger.error(e.getMessage().replace("\n", " "));
+        }
+        return success;
     }
 
     protected void disconnect() {
@@ -158,5 +192,14 @@ public abstract class SshCommand extends Thread {
 
     protected String formatCmd(String cmd) {
         return cmd;
+    }
+
+    private String read(BufferedReader reader) throws IOException {
+        String aux;
+        List<String> lines = new ArrayList<>();
+        while ((aux = reader.readLine()) != null) {
+            lines.add(aux);
+        }
+        return StringUtils.join(lines, " ");
     }
 }

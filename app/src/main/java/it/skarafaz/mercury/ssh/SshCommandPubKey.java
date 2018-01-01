@@ -88,48 +88,6 @@ public class SshCommandPubKey extends SshCommand {
     }
 
     @Override
-    protected boolean waitForChannelClosed(ChannelExec channel, InputStream stdout, InputStream stderr) {
-        boolean success = true;
-        try {
-            byte[] tmp = new byte[1024];
-            while (true) {
-                while (stdout.available() > 0) {
-                    int i = stdout.read(tmp, 0, 1024);
-                    if (i < 0) {
-                        break;
-                    }
-                }
-                if (channel.isClosed()) {
-                    if (stdout.available() > 0) {
-                        continue;
-                    }
-                    break;
-                }
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception ee) {
-                    // ignore
-                }
-            }
-            if (channel.getExitStatus() != 0) {
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(new InputStreamReader(stderr));
-                    logger.error(String.format("exit-status: %d - %s", channel.getExitStatus(), read(reader)));
-                } finally {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                }
-                success = false;
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage().replace("\n", " "));
-        }
-        return success;
-    }
-
-    @Override
     protected UserInfo getUserInfo() {
         return new SshCommandUserInfo();
     }
@@ -150,14 +108,5 @@ public class SshCommandPubKey extends SshCommand {
         sb.append("chmod 700 ~/.ssh && ");
         sb.append("chmod 600 ~/.ssh/authorized_keys");
         return sb.toString();
-    }
-
-    private String read(BufferedReader reader) throws IOException {
-        String aux;
-        List<String> lines = new ArrayList<>();
-        while ((aux = reader.readLine()) != null) {
-            lines.add(aux);
-        }
-        return StringUtils.join(lines, " ");
     }
 }
