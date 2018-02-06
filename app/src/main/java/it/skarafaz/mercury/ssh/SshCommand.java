@@ -149,14 +149,10 @@ public abstract class SshCommand extends Thread {
         boolean success = true;
         try {
             BufferedReader readerStdout = new BufferedReader(new InputStreamReader(stdout));
-            String output = reader(readerStdout, "\n");
-            logger.info(String.format("stdout: %s", output));
-            Context context = getApplicationContext();
-            CharSequence text = "Hello toast!";
-            int duration = Toast.LENGTH_SHORT;
-
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
+            String line;
+            while ((line = readerStdout.readLine()) != null) {
+                logger.info(String.format("stdout: %s", line));
+            }
             while (!channel.isClosed()) {
                 try {
                     Thread.sleep(1000);
@@ -168,7 +164,7 @@ public abstract class SshCommand extends Thread {
                 BufferedReader reader = null;
                 try {
                     reader = new BufferedReader(new InputStreamReader(stderr));
-                    logger.error(String.format("exit-status: %d - %s", channel.getExitStatus(), read(reader, " ")));
+                    logger.error(String.format("exit-status: %d - %s", channel.getExitStatus(), read(reader)));
                 } finally {
                     if (reader != null) {
                         reader.close();
@@ -198,12 +194,12 @@ public abstract class SshCommand extends Thread {
         return cmd;
     }
 
-    private String read(BufferedReader reader, String separator) throws IOException {
+    private String read(BufferedReader reader) throws IOException {
         String aux;
         List<String> lines = new ArrayList<>();
         while ((aux = reader.readLine()) != null) {
             lines.add(aux);
         }
-        return StringUtils.join(lines, separator);
+        return StringUtils.join(lines, " ");
     }
 }
